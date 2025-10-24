@@ -13,11 +13,15 @@ public class PerformanceTest {
   @Test
   public void testPerformance() throws IOException {
     TestPlanStats stats = testPlan(
-        threadGroup(1, 100,
-            httpSampler("http://127.0.0.1:8080")),
+        rpsThreadGroup()
+            .maxThreads(300)
+            .rampToAndHold(100, Duration.ofSeconds(5), Duration.ofSeconds(60))
+            .children(
+                httpSampler("http://127.0.0.1:8080")),
+        // threadGroup(20, 10,
+        // httpSampler("http://127.0.0.1:8080")),
         jtlWriter(System.getProperty("testOutputLocation")))
         .run();
-    assertThat(stats.overall().sampleTimePercentile99()).isLessThan(Duration.ofSeconds(50));
+    assertThat(stats.overall().sampleTimePercentile99()).isLessThan(Duration.ofSeconds(60));
   }
-
 }

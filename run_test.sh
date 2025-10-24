@@ -1,8 +1,9 @@
 #!/bin/bash
 
 run_tests() {
-    if [ "$1" == "jmeter" ]; then
-        run_jmeter_test "$2" "$3"
+    start_resource_collection
+    if [ $test_type == "jmeter" ]; then
+        run_jmeter_test
     else
         run_k6_test
     fi
@@ -10,9 +11,7 @@ run_tests() {
 
 run_jmeter_test() {
     echo "Running JMeter test..."
-    mvn -f ./jmeter clean test -DtestOutputLocation="$1" > /dev/null 2>&1 &
-    local pid=$!
-    wait $pid
+    mvn -f ./jmeter clean test -DtestOutputLocation=$output_location # > /dev/null 2>&1
 }
 
 run_k6_test() {
@@ -36,6 +35,7 @@ stop_docker() {
 
 start_resource_collection() {
     echo "Starting resource collection..."
+    
 }
 
 if [ "$#" -lt 3 ]; then
@@ -46,6 +46,11 @@ if [ "$1" != "jmeter" ] && [ "$1" != "k6" ]; then
     echo "First argument must be either 'jmeter' or 'k6'"
     exit 1
 fi
+
+test_type="$1"
+output_location="$2"
+resource_location="$3"
+
 start_docker
-run_tests "$1" "$2" "$3"
+run_tests
 stop_docker
